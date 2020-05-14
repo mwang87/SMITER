@@ -63,6 +63,52 @@ class AbstractNoiseInjector(ABC):
         pass  # pragma: no cover
 
 
+class DefaultNoise(AbstractNoiseInjector):
+    def __init__(self, *args, **kwargs):
+        """Noise injector with realistice noise for orbitrap intruments based on:
+            - this publication
+            - that publication
+
+        Args:
+            *args: arguments
+            **kwargs: keyword arguments
+        """
+        logger.info("Initialize DefaultNoiseInjector")
+        self.args = args
+        self.kwargs = kwargs
+
+    def inject_noise(self, *args, **kwargs):
+        kwargs.update(self.kwargs)
+        args += self.args
+        if scan.ms_level == 1:
+            scan = self._ms1_noise(scan, *args, **kwargs)
+        elif scan.ms_level > 1:
+            scan = self._msn_noise(scan, *args, **kwargs)
+        return scan
+
+    def _ms1_noise(self):
+        scan = self._add_white_noise(scan)
+        scan = self._add_contaminants(scan)
+        return scan
+
+    def _ms2_noise(self):
+        scan = self._add_white_noise(scan)
+        return scan
+
+    def _add_white_noise(self, scan):
+        pass
+
+    def _add_contaminants(self, scan):
+        pass
+
+    def _add_mz_noise(self):
+        pass
+        # more m/z noise at lower intensities
+
+    def _add_intensity_noise(self):
+        pass
+
+
 class GaussNoiseInjector(AbstractNoiseInjector):
     def __init__(self, *args, **kwargs):
         # np.random.seed(1312)
